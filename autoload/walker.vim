@@ -6,35 +6,58 @@ if !exists('g:walker_current_walk')
   let g:walker_current_walk = ''
 endif
 
+""" HELPERS {{{
+
 " used for debugging
-function! s:log(...)
+function! Log(...)
   if (get(g:, 'walker_debug', 0))
     " only support first arg right now :\
     echom a:0
   end
 endfunction
 
-" used for actually 'talking' to user
-function! s:message(...)
-    " only support first arg right now :\
-  echom(a:0)
+function! BuildQFList(_, path)
+  let [filename, lnum] = split(a:path, ';')
+  return {
+        \  'filename': filename,
+        \  'lnum': lnum,
+        \  'text': '_'
+        \ }
 endfunction
 
-" todo: use git / SCM to look up route and append a hash if necessary?
-" we need to ideally:
-"   store things in a human readable but also machine parseable way (YAML OMG)
+function! GetWalkFiles()
+  let files = split(globpath(g:walker_path, "*"), "\n")
+  let names = []
+  let idx = 0
+  for file in files
+    :call add(names, idx . "-:" . fnamemodify(file, ":t"))
+    let idx = idx + 1
+  endfor
+  return [files, names]
+endfunction
+
+function! Prompt(message)
+  call inputsave()
+  let choice = input(a:message)
+  call inputrestore()
+  return choice
+endfunction
+""" }}}
+
+" responsible for writing a line to the walk file
 function! walker#mark()
   let lineNo = line(".")
   let filePath = expand("%:p")
   if empty(g:walker_current_walk)
-    :call s:log("No walk file defined, choose one:\n")
-    :call walker#setFile()
+    call Log("No walk file defined, choose one:\n")
+    call walker#setFile()
   end
 
   " I do not know how to discard output except by assigning ¯\_(ツ)_/¯
-  let _ = execute('! echo "' . filePath . ':' . lineNo . ';" >>' . g:walker_current_walk)
+  let _ = execute('! echo "' . filePath . ';' . lineNo . ';" >>' . g:walker_current_walk)
 endfunction
 
+" List files
 " this is the quickest and dirtiest way of doing this and easily editing the
 " files, there may be better options
 function! walker#files()
@@ -43,19 +66,9 @@ function! walker#files()
 endfunction
 
 function! walker#setFile()
-  let files = split(globpath(g:walker_path, "*"), "\n")
-  let names = []
-  let idx = 0
-
-  for file in files
-    :call add(names, idx . "-:" . fnamemodify(file, ":t"))
-    let idx = idx + 1
-  endfor
-
-  call s:message(join(names, " "))
-  call inputsave()
-  let choice = input('Choose an existing walk or enter the name of a new one (e.g. "my_walk")')
-  call inputrestore()
+  let [files, names] = GetWalkFiles()
+  echo join(names, " ")
+  let choice = Prompt('Choose an existing walk or enter the name of a new one (e.g. "my_walk")')
 
   " look for non digit characters and use them as the name of a walk
   " within the walk folder
@@ -66,25 +79,26 @@ function! walker#setFile()
 
   let chosenFile = get(files,  str2nr(choice), v:null)
   if chosenFile is v:null
-    call s:message("Invalid index specified"))
+    call Message("Invalid index specified"))
     return
-  else
-    let g:walker_current_walk = chosenFile
   endif
+
+  let g:walker_current_walk = chosenFile
 endfunction
 
-function! s:buildQFList(_, path)
-  let [filename, lnum] = split(a:path, ';')
-  return {
-        \  'filename': filename,
-        \  'lnum': lnum,
-        \  'text': ''
-        \ }
-endfunction
+function! walker#walk()
+  let [files, names] = GetWalkFiles()
+  echo join(names, " ")
+  let walkName = Prompt('Choose a walk:')
+  let chosenFile = get(files,  str2nr(walkName), v:null)
+  if chosenFile is v:null
+    call echo "Invalid index specified"
+    return
+  endif
 
-function! walker#walk(walk_name)
-  let contents = readfile(glob(g:walker_path . '/' . a:walk_name))
-  let qfList = map(contents, function('s:buildQFList'))
-  :call setqflist(qfList, 'r')
-  :execute
+  let g:walker_current_walk = chosenFile
+  let contents = readfile(chosenFile)
+  let qfList = map(contents, function('BuildQFList'))
+  call setqflist(qfList, 'r')
+  :copen
 endfunction
