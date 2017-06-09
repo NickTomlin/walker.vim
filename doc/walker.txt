@@ -1,3 +1,6 @@
+*walker.txt* Make code walks as simple as a roundhouse kick to the face.
+*walker*
+
 I8,        8        ,8I    db         88           88      a8P   88888888888  88888888ba   
 `8b       d8b       d8'   d88b        88           88    ,88'    88           88      "8b  
  "8,     ,8"8,     ,8"   d8'`8b       88           88  ,88"      88           88      ,8P  
@@ -9,20 +12,41 @@ I8,        8        ,8I    db         88           88      a8P   88888888888  88
 
 ==============================================================================
 
-1. Intro
+1. Intro                                                          *walker-intro*
 
-Walker attempts to make slicing up code paths in an application -- typically for doing a presentation to an interested partie(s) -- slightly easier. It also exists soley because I wanted to right a Vim Plugin that did _something_
+Walker attempts to make slicing up code paths in an application -- typically for
+doing a presentation to an interested partie(s) -- slightly easier. It also
+exists soley because I wanted to right a Vim Plugin.
 
 ==============================================================================
 
-2. Usage
+2. Usage                                                          *walker-usage*
 
-Use :call walker#mark() (mapped to <leader>wm by default) which will prompt you for the name of a walk. Once you've selected a walk, subsequent calls to mark() will silently write the line you've marked to the chosen file.
+Use :call `walker#mark()` which will prompt you for the name of a walk.
+Once you've selected a walk, subsequent calls to mark() will 
+silently write the line you've marked to the chosen file.
 
+To open an existing walk, use walker#walk(), which will open the quickfix list
+(:help quickfix) with all of the points in the walk. You can then navigate
+through the list with :cn or your favorite binding.
 
-==============================================================================o
+To set a new walkfile, :call `walker#setFile()`. You can then continue to use
+`walker#mark()` on the new walk.
 
-3. Configuration
+A simple mapping for walker functionality is to bind #mark and #walk:
+>
+    nmap <silent> <leader>wm :call walker#mark()<CR>
+    nmap <silent> <leader>ww :call walker#walk()<CR>
 
-g:walker_map_keys: set to '0' to remove the default bindings.
-g:walker_path: Directory store walkfiles
+===============================================================================
+
+2. Configuration                                           *walker-configuration*
+>
+> 
+g:walker_map_keys: Handles whether default bindings are mapped or not.
+    set to '0' to remove the default bindings.
+
+g:walker_path: '' -- Path of directory to store files in
+<
+
+vim:tw=78:sw=4:ft=help:norl:
