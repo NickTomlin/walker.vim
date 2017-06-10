@@ -22,5 +22,5 @@ nmap <silent> <leader>ww :call walker#walk()<CR>
 
 ## Usage
 
-See [docs/walker.txt]
+See the [docs](doc/walker.txt)
 
