@@ -16,7 +16,7 @@ I8,        8        ,8I    db         88           88      a8P   88888888888  88
 
 Walker attempts to make slicing up code paths in an application -- typically for
 doing a presentation to an interested partie(s) -- slightly easier. It also
-exists soley because I wanted to right a Vim Plugin.
+exists soley because I wanted to write a Vim Plugin.
 
 ==============================================================================
 
