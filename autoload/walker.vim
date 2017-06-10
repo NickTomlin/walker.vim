@@ -7,7 +7,6 @@ if !exists('g:walker_current_walk')
 endif
 
 """ HELPERS {{{
-
 " used for debugging
 function! Log(...)
   if (get(g:, 'walker_debug', 0))
@@ -27,12 +26,11 @@ endfunction
 
 function! GetWalkFiles()
   let files = split(globpath(g:walker_path, "*"), "\n")
-  let names = []
-  let idx = 0
-  for file in files
-    :call add(names, idx . "-:" . fnamemodify(file, ":t"))
-    let idx = idx + 1
-  endfor
+  " a quirk of map allow us to pass a string; since we are iterating over an array
+  " v:key is the index of the item in the array
+  " and v:val is the name of the file
+  " we use deepcopy because map mutates the list passed to it :|
+  let names = map(deepcopy(files), "v:key . '-:' . fnamemodify(v:val, ':t')")
   return [files, names]
 endfunction
 
