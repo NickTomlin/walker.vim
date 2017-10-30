@@ -72,7 +72,15 @@ endfunction
 
 function! walker#setFile()
   let [files, names] = walker#GetWalkFiles()
-  let choice = Prompt('Choose an existing walk or enter the name of a new one (e.g. "my_walk")' . join(names, ''))
+
+
+  echom "Choose the index of an existing walk or enter the name of a new one (e.g. \"my_walk\")"
+  if !empty(names)
+    let listing = join(names, ', ')
+    echom listing
+  endif
+
+  let choice = Prompt("Walk: ")
 
   " look for non digit characters and use them as the name of a walk
   " within the walk folder
