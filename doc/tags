@@ -1,0 +1,5 @@
+walker	walker.txt	/*walker*
+walker-configuration	walker.txt	/*walker-configuration*
+walker-intro	walker.txt	/*walker-intro*
+walker-usage	walker.txt	/*walker-usage*
+walker.txt	walker.txt	/*walker.txt*
