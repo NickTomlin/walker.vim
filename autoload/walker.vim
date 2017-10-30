@@ -1,6 +1,6 @@
 if !exists('g:walker_path')
-  let g:walker_path = "~/workspace/codewalks"
-endif
+  let g:walker_path = "~/.codewalks"
+end
 
 if !exists('g:walker_current_walk')
   let g:walker_current_walk = ''
@@ -24,7 +24,9 @@ function! BuildQFList(_, path)
         \ }
 endfunction
 
-function! GetWalkFiles()
+function! walker#GetWalkFiles()
+  " TODO: currently blank?
+  let globbed = globpath(g:walker_path, "*")
   let files = split(globpath(g:walker_path, "*"), "\n")
   " a quirk of map allow us to pass a string; since we are iterating over an array
   " v:key is the index of the item in the array
@@ -46,10 +48,15 @@ endfunction
 function! walker#mark()
   let lineNo = line(".")
   let filePath = expand("%:p")
+
   if empty(g:walker_current_walk)
     call Log("No walk file defined, choose one:\n")
     call walker#setFile()
   end
+
+  if !isdirectory(g:walker_path)
+    call mkdir(g:walker_path, 'p')
+  endif
 
   " I do not know how to discard output except by assigning ¯\_(ツ)_/¯
   let _ = execute('! echo "' . filePath . ';' . lineNo . ';" >>' . g:walker_current_walk)
@@ -64,9 +71,8 @@ function! walker#files()
 endfunction
 
 function! walker#setFile()
-  let [files, names] = GetWalkFiles()
-  echo join(names, " ")
-  let choice = Prompt('Choose an existing walk or enter the name of a new one (e.g. "my_walk")')
+  let [files, names] = walker#GetWalkFiles()
+  let choice = Prompt('Choose an existing walk or enter the name of a new one (e.g. "my_walk")' . join(names, ''))
 
   " look for non digit characters and use them as the name of a walk
   " within the walk folder
@@ -84,18 +90,10 @@ function! walker#setFile()
   let g:walker_current_walk = chosenFile
 endfunction
 
-function! walker#walk()
-  let [files, names] = GetWalkFiles()
-  echo join(names, " ")
-  let walkName = Prompt('Choose a walk:')
-  let chosenFile = get(files,  str2nr(walkName), v:null)
-  if chosenFile is v:null
-    call echo "Invalid index specified"
-    return
-  endif
+function! walker#open()
+  call walker#setFile()
 
-  let g:walker_current_walk = chosenFile
-  let contents = readfile(chosenFile)
+  let contents = readfile(g:walker_current_walk)
   let qfList = map(contents, function('BuildQFList'))
   call setqflist(qfList, 'r')
   :copen
